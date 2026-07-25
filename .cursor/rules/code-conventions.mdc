@@ -1,0 +1,29 @@
+---
+description: Frontend code style and naming conventions
+globs: **/*.{ts,tsx,js,jsx}
+alwaysApply: false
+---
+
+# Code Conventions
+
+Skeleton — expand as patterns emerge.
+
+## Tooling (TBD)
+
+- Formatting: e.g. Prettier
+- Linting: e.g. ESLint
+
+## Naming
+
+- Components: PascalCase (`UserProfile.tsx`)
+- Hooks: camelCase with `use` prefix (`useAuth.ts`)
+- Utilities: camelCase
+- Constants: pick UPPER_SNAKE_CASE or camelCase and stay consistent
+
+## Imports
+
+TBD — e.g. absolute paths via `@/`, grouped order
+
+## Comments
+
+Only for non-obvious logic; prefer self-documenting code

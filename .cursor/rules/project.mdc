@@ -1,0 +1,48 @@
+---
+description: Project context, stack, and workflow for FAE capstone
+alwaysApply: true
+---
+
+# FAE Capstone — Project Context
+
+Flyrank Frontend AI Engineering capstone. Early setup — update this rule as the stack solidifies.
+
+## Stack (skeleton)
+
+| Layer       | Choice            | Notes                      |
+| ----------- | ----------------- | -------------------------- |
+| Language    | TypeScript        | confirm or change          |
+| Framework   | TBD               | e.g. React, Next.js        |
+| Styling     | TBD               | e.g. Tailwind, CSS Modules |
+| State       | TBD               |                            |
+| API / Data  | TBD               |                            |
+| Testing     | TBD               | e.g. Vitest, Playwright    |
+| Package mgr | npm / pnpm / yarn | pick one                   |
+| Node        | TBD               | e.g. 20.x                  |
+
+## Development
+
+```bash
+npm install    # update when package.json exists
+npm run dev
+npm run build
+npm test
+npm run lint
+```
+
+## Environment
+
+- Secrets in `.env` — never commit
+- Document variables here as they are added
+
+## AI workflow
+
+- Read surrounding code before editing; match existing patterns
+- Minimal diffs — no unrelated refactors
+- Do not commit unless explicitly asked
+- Never commit `.env` or secrets
+- Run tests/lint when available before finishing
+
+## Links (TBD)
+
+- Repository, Figma, API docs, deployment

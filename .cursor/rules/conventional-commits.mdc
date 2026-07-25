@@ -1,0 +1,39 @@
+---
+description: Git author identity and Conventional Commits format
+alwaysApply: true
+---
+
+# Git & Commits
+
+## Author identity
+
+```
+user.name  = Bestman Sene
+user.email = sjsoulute@gmail.com
+```
+
+## Conventional Commits
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>[optional scope]: <description>
+```
+
+**Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
+
+**Examples:**
+
+```
+docs: add README and license
+docs: add gitignore
+feat(auth): add login form
+fix(api): handle 401 on token expiry
+```
+
+**Rules:**
+
+- Imperative mood, lowercase description, no trailing period
+- Optional scope: `feat(ui):`, `fix(api):`
+- Breaking changes: `feat!:` or `BREAKING CHANGE:` footer
+- Reference issues: `Closes #123`
