@@ -1,5 +1,17 @@
-#Project name: Yet to be decided
+# FAE Capstone
 
-This is my Flyrank Frontend AI Engineering capstone project
+Flyrank Frontend AI Engineering capstone project.
 
-##Status: In early setup. More to come 
+**Status:** Early setup — more to come.
+
+## Getting started
+
+<!-- Add setup steps once the stack is initialized -->
+
+```bash
+# TBD
+```
+
+## Project docs
+
+- [AGENTS.md](./AGENTS.md) — conventions and agent instructions
