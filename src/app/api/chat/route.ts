@@ -1,9 +1,9 @@
 import { convertToModelMessages, streamText, validateUIMessages } from "ai";
 import { z } from "zod";
 import { briefSchema } from "@/lib/brief";
+import { MAX_MESSAGES } from "@/lib/chat-limits";
 import {
   GENERATION_SETTINGS,
-  MAX_MESSAGES,
   buildSystemPrompt,
   chatModel,
 } from "@/lib/ai/config";
@@ -22,7 +22,12 @@ export async function POST(req: Request) {
     return Response.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const messages = await validateUIMessages({ messages: parsed.data.messages });
+  let messages;
+  try {
+    messages = await validateUIMessages({ messages: parsed.data.messages });
+  } catch {
+    return Response.json({ error: "Invalid messages" }, { status: 400 });
+  }
 
   const result = streamText({
     model: chatModel,

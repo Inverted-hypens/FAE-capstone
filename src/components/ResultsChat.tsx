@@ -33,5 +33,5 @@ export default function ResultsChat({ boardId }: { boardId: string }) {
     );
   }
 
-  return <StreamingChat key={boardId} brief={brief} />;
+  return <StreamingChat key={boardId} brief={brief} boardId={boardId} />;
 }

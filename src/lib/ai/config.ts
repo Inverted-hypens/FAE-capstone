@@ -23,9 +23,6 @@ export const GENERATION_SETTINGS = {
   maxOutputTokens: 1024,
 } as const;
 
-/** Guardrails on request size. */
-export const MAX_MESSAGES = 40;
-
 /**
  * Builds the system prompt from the submitted brand brief.
  * The brief is user-typed text, so it is fenced and labelled as data,

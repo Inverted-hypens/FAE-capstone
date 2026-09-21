@@ -7,6 +7,8 @@ import { ArrowDown, ArrowUp, Square } from "lucide-react";
 import { Streamdown } from "streamdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { MAX_MESSAGES } from "@/lib/chat-limits";
+import { loadMessages, saveMessages } from "@/lib/chat-storage";
 import { cn } from "@/lib/utils";
 import type { Brief } from "@/lib/brief";
 
@@ -45,13 +47,19 @@ function Bubble({ role, children }: { role: "user" | "assistant"; children: Reac
   );
 }
 
-export default function StreamingChat({ brief }: { brief: Brief }) {
+export default function StreamingChat({ brief, boardId }: { brief: Brief; boardId: string }) {
   // The brief rides along with every request; the server builds the system prompt from it.
   const transport = useMemo(
     () => new DefaultChatTransport({ api: "/api/chat", body: { brief } }),
     [brief],
   );
-  const { messages, sendMessage, status, stop, error, regenerate } = useChat({ transport });
+  // Only mounted client-side (see ResultsChat), so reading localStorage here is safe.
+  const [initialMessages] = useState(() => loadMessages(boardId));
+  const { messages, setMessages, sendMessage, status, stop, error, regenerate } = useChat({
+    id: boardId,
+    messages: initialMessages,
+    transport,
+  });
 
   const [input, setInput] = useState("");
   const [showJump, setShowJump] = useState(false);
@@ -60,6 +68,7 @@ export default function StreamingChat({ brief }: { brief: Brief }) {
   const lastTopRef = useRef(0);
 
   const busy = status === "submitted" || status === "streaming";
+  const atLimit = messages.length >= MAX_MESSAGES;
   const last = messages.at(-1);
   // Before the first assistant message exists, show a placeholder bubble.
   const showPending = busy && last?.role === "user";
@@ -68,6 +77,11 @@ export default function StreamingChat({ brief }: { brief: Brief }) {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, []);
+
+  // Save only between turns (not per token), so a refresh mid-reply restores the last complete state.
+  useEffect(() => {
+    if (status === "ready") saveMessages(boardId, messages);
+  }, [boardId, messages, status]);
 
   // Follow the stream, but only while the user hasn't scrolled away.
   useEffect(() => {
@@ -98,7 +112,7 @@ export default function StreamingChat({ brief }: { brief: Brief }) {
 
   const submit = () => {
     const text = input.trim();
-    if (!text || busy) return;
+    if (!text || busy || atLimit) return;
     pinnedRef.current = true; // sending a message always returns to the bottom
     setShowJump(false);
     setInput("");
@@ -110,6 +124,12 @@ export default function StreamingChat({ brief }: { brief: Brief }) {
       aria-label="Brand strategist chat"
       className="flex h-[calc(100dvh-14rem)] min-h-[26rem] w-full flex-col overflow-hidden rounded-2xl border border-border bg-card"
     >
+      <div className="flex justify-end border-b border-border px-3 py-1.5">
+        <Button variant="ghost" size="sm" disabled={busy || messages.length === 0} onClick={() => setMessages([])}>
+          Clear chat
+        </Button>
+      </div>
+
       <div className="relative min-h-0 flex-1">
         <div
           ref={scrollRef}
@@ -173,6 +193,12 @@ export default function StreamingChat({ brief }: { brief: Brief }) {
         ) : null}
       </div>
 
+      {atLimit ? (
+        <p role="note" className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
+          This conversation has reached its length limit. Clear the chat to start a new one.
+        </p>
+      ) : null}
+
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -202,7 +228,7 @@ export default function StreamingChat({ brief }: { brief: Brief }) {
             <Square className="fill-current" />
           </Button>
         ) : (
-          <Button type="submit" disabled={!input.trim()} aria-label="Send message" className="size-11 rounded-full">
+          <Button type="submit" disabled={!input.trim() || atLimit} aria-label="Send message" className="size-11 rounded-full">
             <ArrowUp />
           </Button>
         )}
