@@ -1,33 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-const personalityTraits = ["modern", "friendly", "premium", "bold", "playful", "minimal"] as const;
-
-const formSchema = z.object({
-  brandName: z.string().trim().min(2, "Brand name is required").max(50, "Brand name must be 50 characters or less"),
-  industry: z.string().trim().min(2, "Industry/niche is required").max(40, "Industry/niche must be 40 characters or less"),
-  description: z.string().trim().min(1, "One-sentence description is required").max(150, "Description must be 150 characters or less"),
-  audience: z.string().trim().min(1, "Target audience is required").max(100, "Target audience must be 100 characters or less"),
-  goals: z.string().trim().min(1, "Brand goals are required").max(150, "Brand goals must be 150 characters or less"),
-  competitors: z.string().max(100, "Competitors must be 100 characters or less").optional().or(z.literal("")),
-  personalityTraits: z.array(z.enum(personalityTraits)).min(1, "Pick at least 1 trait").max(4, "Pick between 1 and 4 traits"),
-  keywords: z.string().trim().min(1, "Enter exactly 3 keywords").refine((value) => value.split(/\s+/).filter(Boolean).length === 3, "Enter exactly 3 keywords"),
-  colors: z.string().max(100, "Colors must be 100 characters or less").optional().or(z.literal("")),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { briefSchema as formSchema, personalityTraits, type Brief as FormValues } from "@/lib/brief";
+import { saveBrief } from "@/lib/brief-storage";
 
 export default function BrandBriefForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [boardId, setBoardId] = useState<string | null>(null);
   const firstErrorRef = useRef<HTMLInputElement | HTMLTextAreaElement | HTMLFieldSetElement | null>(null);
 
   const {
@@ -110,6 +98,9 @@ export default function BrandBriefForm() {
     }
 
     console.log("Brand brief data:", parsed.data);
+  const newBoardId = crypto.randomUUID();
+  saveBrief(newBoardId, parsed.data);
+  setBoardId(newBoardId);
     setIsSubmitting(false);
     setIsSuccess(true);
   };
@@ -208,6 +199,11 @@ export default function BrandBriefForm() {
       <div className="flex items-center justify-between gap-4 border-t border-zinc-200 pt-4">
         <div className="text-sm text-zinc-600">
           {isSuccess ? <span className="font-medium text-green-600">Brand brief submitted successfully.</span> : null}
+          {isSuccess && boardId ? (
+            <Link href={`/results/${boardId}`} className="ml-3 font-medium text-primary underline-offset-4 hover:underline">
+              Continue to your chat
+            </Link>
+          ) : null}
         </div>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit brand brief"}

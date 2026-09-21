@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* Lets Tailwind see the utility classes used inside Streamdown (markdown renderer). */
+@source "../../node_modules/streamdown/dist/*.js";
 
 @custom-variant dark (&:is(.dark *));
 
