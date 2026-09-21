@@ -41,9 +41,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${inter.variable} ${spaceGrotesk.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-background text-foreground">
+      <body suppressHydrationWarning className="flex min-h-full flex-col bg-background text-foreground">
         <header className="border-b border-border bg-background">
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between">
             <Link
@@ -52,7 +53,7 @@ export default function RootLayout({
             >
               Brand Compass
             </Link>
-            <nav className="flex flex-col gap-2 md:flex-row md:items-center md:gap-6">
+            <nav className="flex flex-wrap gap-x-4 gap-y-1 md:items-center md:gap-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
