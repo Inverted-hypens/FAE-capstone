@@ -1,0 +1,80 @@
+import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import StreamingChat from "./StreamingChat";
+import type { Brief } from "@/lib/brief";
+
+const mockUseChat = vi.fn();
+
+vi.mock("@ai-sdk/react", () => ({
+  useChat: (...args: unknown[]) => mockUseChat(...args),
+}));
+
+const mockBrief: Brief = {
+  brandName: "Acme",
+  industry: "Technology",
+  description: "Modern developer tools for everyone",
+  audience: "Software Engineers",
+  goals: "Build delightful software",
+  personalityTraits: ["modern", "minimal"],
+  keywords: "fast clean reliable",
+};
+
+describe("StreamingChat error state", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("handles rate_limit error by showing rate limit copy and a disabled button with countdown label", () => {
+    const regenerateMock = vi.fn();
+
+    mockUseChat.mockReturnValue({
+      messages: [],
+      setMessages: vi.fn(),
+      sendMessage: vi.fn(),
+      status: "error",
+      stop: vi.fn(),
+      error: new Error("rate_limit"),
+      regenerate: regenerateMock,
+    });
+
+    render(<StreamingChat brief={mockBrief} boardId="board-1" />);
+
+    // Assert rate-limit copy is shown
+    expect(
+      screen.getByText("You're sending messages too fast. Try again in a moment.")
+    ).toBeInTheDocument();
+
+    // Assert button is disabled and its label contains a number
+    const retryButton = screen.getByRole("button", { name: /retry/i });
+    expect(retryButton).toBeDisabled();
+    expect(retryButton).toHaveTextContent(/retry \(\d+s\)/i);
+  });
+
+  it("handles generic error by showing generic copy and an enabled button that calls regenerate on click", () => {
+    const regenerateMock = vi.fn();
+
+    mockUseChat.mockReturnValue({
+      messages: [],
+      setMessages: vi.fn(),
+      sendMessage: vi.fn(),
+      status: "error",
+      stop: vi.fn(),
+      error: new Error("generic"),
+      regenerate: regenerateMock,
+    });
+
+    render(<StreamingChat brief={mockBrief} boardId="board-1" />);
+
+    // Assert generic copy is shown
+    expect(
+      screen.getByText("Something went wrong. Retry will resend your last message.")
+    ).toBeInTheDocument();
+
+    // Assert button is enabled and calls regenerate() on click
+    const retryButton = screen.getByRole("button", { name: /^retry$/i });
+    expect(retryButton).toBeEnabled();
+
+    fireEvent.click(retryButton);
+    expect(regenerateMock).toHaveBeenCalledTimes(1);
+  });
+});

@@ -1,4 +1,10 @@
-import { convertToModelMessages, stepCountIs, streamText, validateUIMessages } from "ai";
+import {
+  APICallError,
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  validateUIMessages,
+} from "ai";
 import { z } from "zod";
 import { briefSchema } from "@/lib/brief";
 import { MAX_MESSAGES } from "@/lib/chat-limits";
@@ -41,5 +47,13 @@ export async function POST(req: Request) {
     ...GENERATION_SETTINGS,
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse({
+    onError: (error) => {
+      console.error("[chat]", error);
+      if (APICallError.isInstance(error) && error.statusCode === 429) {
+        return "rate_limit";
+      }
+      return "generic";
+    },
+  });
 }

@@ -60,6 +60,25 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
   });
 
   const [input, setInput] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (status === "error" && error?.message === "rate_limit") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCooldown(10);
+      const interval = setInterval(() => {
+        setCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+    setCooldown(0);
+  }, [status, error]);
   const [showJump, setShowJump] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const pinnedRef = useRef(true); // true = follow new tokens to the bottom
@@ -174,9 +193,18 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
 
           {status === "error" ? (
             <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              <span>{error ? "Something went wrong. Please try again." : "Something went wrong."}</span>
-              <Button variant="outline" size="sm" onClick={() => regenerate()}>
-                Retry
+              <span>
+                {error?.message === "rate_limit"
+                  ? "You're sending messages too fast. Try again in a moment."
+                  : "Something went wrong. Retry will resend your last message."}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={cooldown > 0}
+                onClick={() => regenerate()}
+              >
+                {cooldown > 0 ? `Retry (${cooldown}s)` : "Retry"}
               </Button>
             </div>
           ) : null}
