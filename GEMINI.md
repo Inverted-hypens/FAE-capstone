@@ -1,6 +1,6 @@
-# AGENTS.md
+# GEMINI.md
 
-Instructions for AI agents working in this repository.
+Instructions for the Gemini agent working in this repository, mirrored from AGENTS.md — keep both files in sync when either changes.
 
 ## Project
 

@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import { DefaultChatTransport } from "ai";
 import { ArrowDown, ArrowUp, Square } from "lucide-react";
 import { Streamdown } from "streamdown";
+import { BrandDirectionToolPart } from "@/components/BrandDirectionCard";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MAX_MESSAGES } from "@/lib/chat-limits";
@@ -12,10 +13,7 @@ import { loadMessages, saveMessages } from "@/lib/chat-storage";
 import { cn } from "@/lib/utils";
 import type { Brief } from "@/lib/brief";
 
-/** Joins the text parts of a message. Other part types are ignored for now. */
-function textOf(message: UIMessage): string {
-  return message.parts.map((part) => (part.type === "text" ? part.text : "")).join("");
-}
+type ToolPart = Parameters<typeof BrandDirectionToolPart>[0]["part"];
 
 /** Shown in the assistant bubble until the first token arrives. */
 function ThinkingDots() {
@@ -145,21 +143,25 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
           ) : null}
 
           {messages.map((message) => {
-            const text = textOf(message);
             const isLiveAssistant = busy && message.id === last?.id && message.role === "assistant";
             if (message.role === "system") return null;
             return (
               <Bubble key={message.id} role={message.role}>
-                {message.role === "user" ? (
-                  text
-                ) : isLiveAssistant && !text ? (
-                  <ThinkingDots />
-                ) : (
-                  // Streamdown repairs half-finished markdown (open **, unclosed code fences) while tokens arrive.
-                  <Streamdown isAnimating={isLiveAssistant} controls={false}>
-                    {text}
-                  </Streamdown>
-                )}
+                {message.parts.map((part, index) => {
+                  if (part.type === "text") {
+                    return isLiveAssistant && !part.text ? (
+                      <ThinkingDots key={index} />
+                    ) : (
+                      <Streamdown key={index} isAnimating={isLiveAssistant} controls={false}>
+                        {part.text}
+                      </Streamdown>
+                    );
+                  }
+                  if (part.type === "tool-generateBrandDirection") {
+                    return <BrandDirectionToolPart key={index} part={part as unknown as ToolPart} />;
+                  }
+                  return null;
+                })}
               </Bubble>
             );
           })}

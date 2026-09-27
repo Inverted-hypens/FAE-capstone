@@ -1,4 +1,4 @@
-import { convertToModelMessages, streamText, validateUIMessages } from "ai";
+import { convertToModelMessages, stepCountIs, streamText, validateUIMessages } from "ai";
 import { z } from "zod";
 import { briefSchema } from "@/lib/brief";
 import { MAX_MESSAGES } from "@/lib/chat-limits";
@@ -7,6 +7,7 @@ import {
   buildSystemPrompt,
   chatModel,
 } from "@/lib/ai/config";
+import { generateBrandDirection } from "@/lib/ai/tools/generate-brand-direction";
 
 // Must be a literal so Next.js can read it at build time.
 export const maxDuration = 60;
@@ -33,6 +34,8 @@ export async function POST(req: Request) {
     model: chatModel,
     system: buildSystemPrompt(parsed.data.brief),
     messages: await convertToModelMessages(messages),
+    tools: { generateBrandDirection },
+    stopWhen: stepCountIs(2),
     // Stops the upstream Gemini call when the client aborts (Stop button).
     abortSignal: req.signal,
     ...GENERATION_SETTINGS,
