@@ -68,10 +68,9 @@ describe("BoardsPage empty state", () => {
     // Explaining no boards exist
     expect(screen.getByText(/saved brand boards yet/i)).toBeInTheDocument();
 
-    // Primary button with asChild wrapping link to /brief
+    // Link with buttonVariants pointing to /brief
     const link = screen.getByRole("link", { name: /start a new brand brief/i });
     expect(link).toHaveAttribute("href", "/brief");
-    // Verify it was wrapped by Button (has button classes)
     expect(link).toHaveClass("bg-primary", "text-primary-foreground");
   });
 });

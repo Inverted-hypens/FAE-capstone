@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export default function BoardsPage() {
   return (
@@ -12,9 +12,9 @@ export default function BoardsPage() {
           You don&apos;t have any saved brand boards yet.
         </p>
         <div className="pt-2">
-          <Button asChild>
-            <Link href="/brief">Start a new brand brief</Link>
-          </Button>
+          <Link href="/brief" className={buttonVariants({ variant: "default" })}>
+            Start a new brand brief
+          </Link>
         </div>
       </div>
     </main>
