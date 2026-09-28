@@ -139,4 +139,30 @@ describe("StreamingChat error state", () => {
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
+
+  it("puts suggestion text in the input and does not call sendMessage when clicked", () => {
+    const sendMessageMock = vi.fn();
+
+    mockUseChat.mockReturnValue({
+      messages: [],
+      setMessages: vi.fn(),
+      sendMessage: sendMessageMock,
+      status: "ready",
+      stop: vi.fn(),
+      error: undefined,
+      regenerate: vi.fn(),
+    });
+
+    render(<StreamingChat brief={mockBrief} boardId="board-1" />);
+
+    const suggestion = `Suggest a colour palette for ${mockBrief.brandName}`;
+    const button = screen.getByRole("button", { name: suggestion });
+
+    fireEvent.click(button);
+
+    const input = screen.getByRole("textbox", { name: /message/i });
+    expect(input).toHaveValue(suggestion);
+    expect(sendMessageMock).not.toHaveBeenCalled();
+  });
 });
+

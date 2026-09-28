@@ -64,6 +64,7 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
   });
 
   const [input, setInput] = useState("");
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
@@ -169,9 +170,30 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
           className="h-full space-y-3 overflow-y-auto overscroll-contain px-4 py-4"
         >
           {messages.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Ask about colour, tone of voice or positioning for {brief.brandName}.
-            </p>
+            <div className="space-y-3 py-2">
+              <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+                Ask about {brief.brandName}
+              </h2>
+              <div className="flex flex-col gap-2">
+                {[
+                  `Suggest a colour palette for ${brief.brandName}`,
+                  `What tone of voice fits ${brief.brandName}?`,
+                  `How should ${brief.brandName} position itself?`,
+                ].map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => {
+                      setInput(suggestion);
+                      inputRef.current?.focus();
+                    }}
+                    className="cursor-pointer rounded-2xl border border-border bg-card p-3 text-left text-sm text-foreground transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : null}
 
           {messages.map((message) => {
@@ -255,6 +277,7 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
         className="flex items-end gap-2 border-t border-border p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
       >
         <Textarea
+          ref={inputRef}
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={(event) => {
