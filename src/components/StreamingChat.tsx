@@ -209,7 +209,7 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
               <span>
                 {status === "error"
                   ? error?.message === "rate_limit"
-                    ? "You're sending messages too fast. Try again in a moment."
+                    ? "The AI service has reached its usage limit. Please try again later."
                     : "Something went wrong. Retry will resend your last message."
                   : "The reply was cut off. Retry will resend your last message."}
               </span>

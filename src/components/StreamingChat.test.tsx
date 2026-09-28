@@ -41,7 +41,7 @@ describe("StreamingChat error state", () => {
 
     // Assert rate-limit copy is shown
     expect(
-      screen.getByText("You're sending messages too fast. Try again in a moment.")
+      screen.getByText("The AI service has reached its usage limit. Please try again later.")
     ).toBeInTheDocument();
 
     // Assert button is disabled and its label contains a number
