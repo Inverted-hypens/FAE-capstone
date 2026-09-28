@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import StreamingChat from "./StreamingChat";
 import type { Brief } from "@/lib/brief";
@@ -76,5 +76,67 @@ describe("StreamingChat error state", () => {
 
     fireEvent.click(retryButton);
     expect(regenerateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("handles truncated reply when onFinish has finishReason undefined and status ready", () => {
+    const regenerateMock = vi.fn();
+
+    mockUseChat.mockReturnValue({
+      messages: [],
+      setMessages: vi.fn(),
+      sendMessage: vi.fn(),
+      status: "ready",
+      stop: vi.fn(),
+      error: undefined,
+      regenerate: regenerateMock,
+    });
+
+    render(<StreamingChat brief={mockBrief} boardId="board-1" />);
+
+    const chatOptions = mockUseChat.mock.calls[0][0];
+    act(() => {
+      chatOptions.onFinish({
+        isAbort: false,
+        isError: false,
+        finishReason: undefined,
+      });
+    });
+
+    // Assert the truncated copy shows
+    expect(
+      screen.getByText("The reply was cut off. Retry will resend your last message.")
+    ).toBeInTheDocument();
+
+    // Assert Retry is enabled and calls regenerate() on click
+    const retryButton = screen.getByRole("button", { name: /^retry$/i });
+    expect(retryButton).toBeEnabled();
+
+    fireEvent.click(retryButton);
+    expect(regenerateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not render alert when onFinish has finishReason 'stop' and status ready", () => {
+    mockUseChat.mockReturnValue({
+      messages: [],
+      setMessages: vi.fn(),
+      sendMessage: vi.fn(),
+      status: "ready",
+      stop: vi.fn(),
+      error: undefined,
+      regenerate: vi.fn(),
+    });
+
+    render(<StreamingChat brief={mockBrief} boardId="board-1" />);
+
+    const chatOptions = mockUseChat.mock.calls[0][0];
+    act(() => {
+      chatOptions.onFinish({
+        isAbort: false,
+        isError: false,
+        finishReason: "stop",
+      });
+    });
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

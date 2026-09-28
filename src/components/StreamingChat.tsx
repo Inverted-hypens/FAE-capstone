@@ -53,10 +53,14 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
   );
   // Only mounted client-side (see ResultsChat), so reading localStorage here is safe.
   const [initialMessages] = useState(() => loadMessages(boardId));
+  const [truncated, setTruncated] = useState(false);
   const { messages, setMessages, sendMessage, status, stop, error, regenerate } = useChat({
     id: boardId,
     messages: initialMessages,
     transport,
+    onFinish: ({ isAbort, isError, finishReason }) => {
+      setTruncated(!isAbort && !isError && finishReason === undefined);
+    },
   });
 
   const [input, setInput] = useState("");
@@ -97,8 +101,8 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
 
   // Save only between turns (not per token), so a refresh mid-reply restores the last complete state.
   useEffect(() => {
-    if (status === "ready") saveMessages(boardId, messages);
-  }, [boardId, messages, status]);
+    if (status === "ready" && !truncated) saveMessages(boardId, messages);
+  }, [boardId, messages, status, truncated]);
 
   // Follow the stream, but only while the user hasn't scrolled away.
   useEffect(() => {
@@ -133,6 +137,7 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
     pinnedRef.current = true; // sending a message always returns to the bottom
     setShowJump(false);
     setInput("");
+    setTruncated(false);
     sendMessage({ text });
   };
 
@@ -142,7 +147,15 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
       className="flex h-[calc(100dvh-14rem)] min-h-[26rem] w-full flex-col overflow-hidden rounded-2xl border border-border bg-card"
     >
       <div className="flex justify-end border-b border-border px-3 py-1.5">
-        <Button variant="ghost" size="sm" disabled={busy || messages.length === 0} onClick={() => setMessages([])}>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={busy || messages.length === 0}
+          onClick={() => {
+            setTruncated(false);
+            setMessages([]);
+          }}
+        >
           Clear chat
         </Button>
       </div>
@@ -191,18 +204,23 @@ export default function StreamingChat({ brief, boardId }: { brief: Brief; boardI
             </Bubble>
           ) : null}
 
-          {status === "error" ? (
+          {status === "error" || truncated ? (
             <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               <span>
-                {error?.message === "rate_limit"
-                  ? "You're sending messages too fast. Try again in a moment."
-                  : "Something went wrong. Retry will resend your last message."}
+                {status === "error"
+                  ? error?.message === "rate_limit"
+                    ? "You're sending messages too fast. Try again in a moment."
+                    : "Something went wrong. Retry will resend your last message."
+                  : "The reply was cut off. Retry will resend your last message."}
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 disabled={cooldown > 0}
-                onClick={() => regenerate()}
+                onClick={() => {
+                  setTruncated(false);
+                  regenerate();
+                }}
               >
                 {cooldown > 0 ? `Retry (${cooldown}s)` : "Retry"}
               </Button>
