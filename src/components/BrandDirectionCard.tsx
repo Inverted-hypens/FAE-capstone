@@ -54,7 +54,8 @@ export function BrandDirectionToolPart({ part }: { part: ToolPart }) {
                 {contrast ? (
                   <span className={cn("flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium", contrast.passesAA ? "bg-emerald-500/15 text-emerald-600" : "bg-destructive/15 text-destructive")} title={`Contrast ratio ${contrast.ratio}:1 against background`}>
                     {contrast.passesAA ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}
-                    {contrast.ratio}:1
+                    <span>{contrast.ratio}:1</span>
+                    <span className="sr-only">{contrast.passesAA ? "passes AA" : "fails AA"}</span>
                   </span>
                 ) : null}
               </div>
