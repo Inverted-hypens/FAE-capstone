@@ -96,4 +96,10 @@ describe("BrandDirectionToolPart", () => {
     // "Ink" and "Paper White" have no report entry, so no badge is rendered for them.
     expect(screen.getAllByText(/:1$/)).toHaveLength(2);
   });
+
+  it("states in text whether each colour passes WCAG AA contrast, not only through colour or an icon", () => {
+    render(<BrandDirectionToolPart part={outputPart} />);
+    expect(screen.getByText(/passes AA/i)).toBeInTheDocument();
+    expect(screen.getByText(/fails AA/i)).toBeInTheDocument();
+  });
 });
