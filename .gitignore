@@ -12,3 +12,6 @@ build/
 *.tsbuildinfo
 # next-agents-md
 .next-docs/
+
+/test-results/
+/playwright-report/
